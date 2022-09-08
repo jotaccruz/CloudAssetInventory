@@ -1,0 +1,32 @@
+--To export only a Project to BigQuery:
+gcloud pubsub topics publish CloudAssetInventory --message=”{"""data""":{"""SourceProject""":["""ti-dba-devenv-01"""],"""asset_types""":[""".*.googleapis.com.*Instance""","""storage.googleapis.com/Bucket"""],"""dataset""":"""projects/ti-dba-devenv-01/datasets/AssetInventory""","""table""":"""assetinventory"""}}”
+
+--To export more than a Project to BigQuery:
+gcloud pubsub topics publish CloudAssetInventory --message=”{"""data""":{"""SourceProject""":["""ti-dba-devenv-01""","""ti-lbai-sandbox"""],"""asset_types""":[""".*.googleapis.com.*Instance""","""storage.googleapis.com/Bucket"""],"""dataset""":"""projects/ti-dba-devenv-01/datasets/AssetInventory""","""table""":"""assetinventory"""}}”
+
+Validations:
+1. SourceInstance Exists
+2. TargetInstance Exists
+3. Source and Target Same Version
+4. Target Storage enough
+5. TargetInstance is a MASTER for Replica
+6. TargetInstance is a REPLICA for Replica
+7. Target Instance Stopped
+
+
+--BigQuery SELECT
+SELECT  RIGHT(name,(LENGTH(name)-(LENGTH(REGEXP_EXTRACT(name, r'^(.*)/.*'))+1))) as name
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.owner'),LENGTH(JSON_QUERY(resource.data, '$.labels.owner'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.owner'))-2) AS owner
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.env'),LENGTH(JSON_QUERY(resource.data, '$.labels.env'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.env'))-2) AS env
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.app'),LENGTH(JSON_QUERY(resource.data, '$.labels.app'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.app'))-2) AS app
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.status'),LENGTH(JSON_QUERY(resource.data, '$.status'))-1),LENGTH(JSON_QUERY(resource.data, '$.status'))-2) AS status
+FROM `ti-dba-devenv-01.AssetInventory.ti-dba-devenv-01`
+WHERE asset_type = 'compute.googleapis.com/Instance'
+UNION ALL
+SELECT  RIGHT(name,(LENGTH(name)-(LENGTH(REGEXP_EXTRACT(name, r'^(.*)/.*'))+1))) as name
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.owner'),LENGTH(JSON_QUERY(resource.data, '$.labels.owner'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.owner'))-2) AS owner
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.env'),LENGTH(JSON_QUERY(resource.data, '$.labels.env'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.env'))-2) AS env
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.labels.app'),LENGTH(JSON_QUERY(resource.data, '$.labels.app'))-1),LENGTH(JSON_QUERY(resource.data, '$.labels.app'))-2) AS app
+,LEFT(RIGHT(JSON_QUERY(resource.data, '$.status'),LENGTH(JSON_QUERY(resource.data, '$.status'))-1),LENGTH(JSON_QUERY(resource.data, '$.status'))-2) AS status
+FROM `ti-dba-devenv-01.AssetInventory.ti-lbai-sandbox`
+WHERE asset_type = 'compute.googleapis.com/Instance'
