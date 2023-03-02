@@ -34,11 +34,15 @@ def export_assets(event, context):
     output_config.bigquery_destination.force = False
     output_config.bigquery_destination.partition_spec = partition_spec
 
-    for projects in variables['SourceProject']:
-        print (projects)
+    for names in variables['SourceName']:
+        level = variables['Level']
+        sourcename = names
+        parent = level + "/" + sourcename
+        print (parent)
+
         #output_config.bigquery_destination.table = projects #"tidbadevenv01"
         request = asset_v1.ExportAssetsRequest(
-            parent = "projects/" + projects,
+            parent = parent,
             content_type = "RESOURCE",
             asset_types = variables['asset_types']
             #[
@@ -58,7 +62,7 @@ def export_assets(event, context):
         operation = client.export_assets(request=request)
 
         msg_body = base64.b64decode(event['data']).decode('utf-8')
-        msg_body = projects
+        msg_body = sourcename
         print('Exporting: {}'.format(msg_body))
         response = operation.result()
 

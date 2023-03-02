@@ -10,8 +10,10 @@ def get_variables_dynamic(event):
         eventjson = json.loads(event)
         eventdata = eventjson['data']
 
-        if 'SourceProject' in eventdata:
-            variables['SourceProject'] = eventdata['SourceProject']
+        if 'Level' in eventdata:
+            variables['Level'] = eventdata['Level']
+        if 'SourceName' in eventdata:
+            variables['SourceName'] = eventdata['SourceName']
         if 'asset_types' in eventdata:
             variables['asset_types'] = eventdata['asset_types']
         if 'dataset' in eventdata:
@@ -23,4 +25,4 @@ def get_variables_dynamic(event):
     return variables
 
 
-#{"SourceProject":["ti-dba-devenv-01","ti-ca-infrastructure"],"asset_types":[".*.googleapis.com.*Instance"]}
+#{"SourceName":["ti-dba-devenv-01","ti-ca-infrastructure"],"asset_types":[".*.googleapis.com.*Instance"]}
